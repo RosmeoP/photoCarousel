@@ -1,239 +1,324 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react'
 
-export default function DateCarousel() {
-  const photos = [
-    {
-      src: "/img/bicepPic.JPG",
-      caption: "She looks beautiful at my side ❤️",
-    },
-    {
-      src: "/img/hands.JPG",
-      caption: "Holding hands with Dianne ",
-    },
-    {
-      src: "/img/hug.jpg",
-      caption: "A warm hug to remember",
+const PhotoCarousel = ({ photos = [] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [showHearts, setShowHearts] = useState(false)
+  const [selectedPhoto, setSelectedPhoto] = useState(null)
+
+  // Icon Components
+  const HeartIcon = ({ className = "w-5 h-5" }) => (
+    <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+      <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+    </svg>
+  )
+
+  const CloseIcon = () => (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  )
+
+  const SparkleIcon = () => (
+    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+    </svg>
+  )
+
+  // Romantic quotes for each photo
+  const romanticQuotes = [
+    "Cada momento contigo se siente como un cuento de hadas",
+    "En tus brazos, he encontrado mi hogar para siempre", 
+    "Haces que mi corazón se acelere cada día",
+    "El amor se fortalece con cada sonrisa que compartimos",
+    "Juntos creamos nuestra propia historia de amor"
+  ]
+
+  // Generate random positions for Polaroids
+  const getPolaroidStyle = (index) => {
+    const rotations = [-8, 5, -3, 7, -5, 2, -7, 4]
+    const positions = [
+      { top: '5%', left: '10%' },
+      { top: '25%', left: '60%' },
+      { top: '45%', left: '15%' },
+      { top: '65%', left: '70%' },
+      { top: '15%', left: '40%' },
+      { top: '75%', left: '25%' },
+      { top: '35%', left: '75%' },
+      { top: '85%', left: '45%' }
+    ]
+    
+    return {
+      transform: `rotate(${rotations[index % rotations.length]}deg)`,
+      position: 'absolute',
+      ...positions[index % positions.length],
+      zIndex: selectedPhoto === index ? 50 : 10 + index
     }
-  ];
+  }
 
-  const [index, setIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [nextIndex, setNextIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
+  // Generate floating hearts
+  const createFloatingHearts = () => {
+    setShowHearts(true)
+    setTimeout(() => setShowHearts(false), 3000)
+  }
 
-  // Swipe gesture handlers
+  // Handle Polaroid selection
+  const handlePolaroidClick = (index) => {
+    if (selectedPhoto === index) {
+      setSelectedPhoto(null)
+    } else {
+      setSelectedPhoto(index)
+      setCurrentIndex(index)
+    }
+  }
+
+  // Navigation functions
+  const goToNext = () => {
+    if (isLoading) return
+    setIsLoading(true)
+    const nextIndex = (currentIndex + 1) % photos.length
+    setCurrentIndex(nextIndex)
+    setSelectedPhoto(nextIndex)
+    setTimeout(() => setIsLoading(false), 300)
+  }
+
+  const goToPrevious = () => {
+    if (isLoading) return
+    setIsLoading(true)
+    const prevIndex = (currentIndex - 1 + photos.length) % photos.length
+    setCurrentIndex(prevIndex)
+    setSelectedPhoto(prevIndex)
+    setTimeout(() => setIsLoading(false), 300)
+  }
+
+  // Touch/swipe handling for selected photo
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+
   const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
+    setTouchStart(e.targetTouches[0].clientX)
+  }
 
   const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > 50
+    const isRightSwipe = distance < -50
+
+    if (isLeftSwipe) goToNext()
+    if (isRightSwipe) goToPrevious()
     
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
+    setTouchStart(0)
+    setTouchEnd(0)
+  }
 
-    if (isLeftSwipe && !isLoading) nextPhoto();
-    if (isRightSwipe && !isLoading) prevPhoto();
-    
-    setTouchStart(0);
-    setTouchEnd(0);
-  };
-
-  const nextPhoto = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIndex((prevIndex) => (prevIndex + 1) % photos.length);
-      setIsLoading(false);
-    }, 150);
-  };
-
-  const prevPhoto = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIndex((prevIndex) => (prevIndex - 1 + photos.length) % photos.length);
-      setIsLoading(false);
-    }, 150);
-  };
-
-  const goToPhoto = (photoIndex) => {
-    if (photoIndex !== index) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIndex(photoIndex);
-        setIsLoading(false);
-      }, 150);
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'ArrowLeft') goToPrevious()
+      if (e.key === 'ArrowRight') goToNext()
+      if (e.key === 'Escape') setSelectedPhoto(null)
+      if (e.key === ' ') {
+        e.preventDefault()
+        createFloatingHearts()
+      }
     }
-  };
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [currentIndex])
+
+  // Floating hearts component
+  const FloatingHearts = () => {
+    if (!showHearts) return null
+    
+    return (
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute text-red-500 animate-bounce"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+              animationDuration: `${2 + Math.random() * 2}s`
+            }}
+          >
+            <HeartIcon className="w-6 h-6" />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (!photos.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-red-100 p-4">
+        <div className="text-center">
+          <HeartIcon className="w-12 h-12 mx-auto text-red-500 mb-4" />
+          <p className="text-red-500 text-xl">Esperando tus recuerdos de amor...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="bg-gradient-to-b from-blue-300 to-pink-200 min-h-screen flex flex-col relative overflow-hidden">
-      {/* Animated Background Elements - Smaller on mobile */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-5 left-5 sm:top-10 sm:left-10 w-12 h-12 sm:w-20 sm:h-20 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
-        <div className="absolute top-20 right-8 sm:top-32 sm:right-16 w-10 h-10 sm:w-16 sm:h-16 bg-pink-200 bg-opacity-20 rounded-full animate-bounce"></div>
-        <div className="absolute bottom-16 left-8 sm:bottom-20 sm:left-20 w-8 h-8 sm:w-12 sm:h-12 bg-blue-200 bg-opacity-15 rounded-full animate-ping"></div>
-      </div>
+    <div className="relative">
+      {/* Floating Hearts */}
+      <FloatingHearts />
+      
 
-      {/* Enhanced Wave Divider - Smaller on mobile */}
-      <div className="relative flex-shrink-0">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 1440 320"
-          className="w-full drop-shadow-lg h-24 sm:h-auto"
-        >
-          <defs>
-            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9"/>
-              <stop offset="50%" stopColor="#ffffff" stopOpacity="1"/>
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.9"/>
-            </linearGradient>
-          </defs>
-          <path
-            fill="url(#waveGradient)"
-            d="M0,32L60,58.7C120,85,240,139,360,144C480,149,600,107,720,122.7C840,139,960,213,1080,213.3C1200,213,1320,139,1380,101.3L1440,64L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"
-            className="animate-pulse"
-          ></path>
-        </svg>
-        
-        {/* Floating Hearts - Hidden on very small screens */}
-        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-pink-400 animate-bounce hidden xs:block">
-          💕
-        </div>
-      </div>
-
-      {/* Center Content - Mobile optimized spacing */}
-      <div className="flex flex-col justify-center items-center flex-1 px-3 sm:px-4 py-4 relative z-10 min-h-0">
-        {/* Enhanced Title - Mobile responsive */}
-        <div className="text-center mb-4 sm:mb-8 transform hover:scale-105 transition-transform duration-300">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-1 sm:mb-2 text-yellow-900 drop-shadow-lg tracking-tight leading-tight">
-            First date with Dianne
-            <span className="ml-1 sm:ml-2 text-xl sm:text-2xl md:text-3xl animate-pulse">🌺</span>
-          </h1>
-          <div className="flex items-center justify-center gap-1 sm:gap-2 text-gray-700">
-            <span className="text-xs sm:text-sm">📅</span>
-            <p className="text-sm sm:text-base lg:text-lg font-medium italic tracking-wide">
-              Saturday 13th of September, 2025
-            </p>
-          </div>
+      {/* Polaroid Gallery */}
+      <div className="relative w-full h-screen p-4">
+        {/* Background scattered hearts */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-pink-200 opacity-30"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                transform: `rotate(${Math.random() * 360}deg)`
+              }}
+            >
+              <HeartIcon className="w-8 h-8" />
+            </div>
+          ))}
         </div>
 
-        {/* Enhanced Photo Container - Mobile optimized */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-2xl p-3 sm:p-4 md:p-6 w-full max-w-sm sm:max-w-md lg:max-w-lg transform hover:scale-[1.02] transition-all duration-300 border border-white/20 flex-1 flex flex-col min-h-0">
-          
-          {/* Photo Counter - Mobile friendly */}
-          <div className="flex justify-center mb-3 sm:mb-4 flex-shrink-0">
-            <span className="bg-gradient-to-r from-blue-400 to-pink-400 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-              {index + 1} of {photos.length}
-            </span>
-          </div>
-
-          {/* Image Container - Touch enabled with swipe */}
-          <div 
-            className="relative overflow-hidden rounded-xl sm:rounded-2xl mb-3 sm:mb-4 group flex-1 flex items-center justify-center min-h-0 cursor-pointer select-none"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+        {/* Polaroid Photos */}
+        {photos.map((photo, index) => (
+          <div
+            key={index}
+            style={getPolaroidStyle(index)}
+            className={`cursor-pointer transition-all duration-500 ${
+              selectedPhoto === index ? 'scale-110' : 'hover:scale-105'
+            }`}
+            onClick={() => handlePolaroidClick(index)}
           >
-            <div className={`transition-opacity duration-300 w-full h-full flex items-center justify-center ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
+            {/* Polaroid Frame */}
+            <div className="bg-white p-3 pb-16 rounded-lg shadow-2xl border border-gray-200 transform transition-all duration-300 hover:shadow-3xl">
+              <div className="relative">
+                <img
+                  src={photo.src}
+                  alt={photo.title || `Memory ${index + 1}`}
+                  className="w-48 h-40 sm:w-56 sm:h-44 object-cover rounded"
+                  draggable={false}
+                />
+                
+                {/* Tape effect */}
+                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-4 bg-yellow-100 opacity-70 rounded-sm border border-yellow-200"></div>
+              </div>
+              
+              {/* Handwritten style caption */}
+              <div className="mt-3 text-center">
+                <p className="text-gray-700 text-sm font-handwriting" style={{fontFamily: 'cursive'}}>
+                  {photo.title}
+                </p>
+              </div>
+              
+              {/* Small heart indicator if selected */}
+              {selectedPhoto === index && (
+                <div className="absolute -top-1 -right-1">
+                  <HeartIcon className="w-5 h-5 text-red-500 animate-pulse" />
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Instruction text */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+          <p className="text-pink-600 text-sm bg-white/80 px-4 py-2 rounded-full shadow">
+            Toca cualquier foto para enfocar • Desliza para navegar
+          </p>
+        </div>
+      </div>
+
+      {/* Selected Photo Overlay */}
+      {selectedPhoto !== null && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-40 flex items-center justify-center p-4"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setSelectedPhoto(null)}
+            className="absolute top-4 right-4 z-50 bg-white/20 hover:bg-white/30 rounded-full p-2 text-white transition-all"
+          >
+            <CloseIcon />
+          </button>
+
+          {/* Large Polaroid Display */}
+          <div className="bg-white p-6 pb-20 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300">
+            <div className="relative">
               <img
-                src={photos[index].src}
-                alt="Date memory"
-                className="max-w-full max-h-full object-contain rounded-xl sm:rounded-2xl shadow-lg transition-all duration-500 group-hover:scale-105"
+                src={photos[selectedPhoto].src}
+                alt={photos[selectedPhoto].title}
+                className="w-full h-64 object-cover rounded-lg"
                 draggable={false}
               />
+              
+              {/* Vintage tape */}
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-6 bg-yellow-100 opacity-80 rounded border border-yellow-200"></div>
+              <div className="absolute -top-3 right-8 w-8 h-6 bg-yellow-100 opacity-80 rounded border border-yellow-200 transform rotate-12"></div>
             </div>
             
-            {/* Loading Overlay */}
+            {/* Photo details */}
+            <div className="mt-6 text-center space-y-3">
+              <h3 className="text-xl font-bold text-gray-800" style={{fontFamily: 'cursive'}}>
+                {photos[selectedPhoto].title}
+              </h3>
+              
+              {photos[selectedPhoto].description && (
+                <p className="text-gray-600">{photos[selectedPhoto].description}</p>
+              )}
+              
+              <p className="text-pink-600 italic text-sm font-medium">
+                {romanticQuotes[selectedPhoto % romanticQuotes.length]}
+              </p>
+              
+              {/* Navigation dots */}
+              <div className="flex justify-center gap-2 pt-4">
+                {photos.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handlePolaroidClick(index)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === selectedPhoto
+                        ? 'bg-red-500 scale-125'
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            {/* Loading indicator */}
             {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded-xl sm:rounded-2xl">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 border-3 sm:border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
+              <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-xl">
+                <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
-
-            {/* Swipe Indicator */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white/60 text-xs bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm sm:hidden">
-              ← Swipe →
-            </div>
-
-            {/* Touch-friendly navigation arrows - larger on mobile */}
-            <button
-              onClick={prevPhoto}
-              disabled={isLoading}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 sm:p-2 shadow-lg transition-all text-gray-700 hover:text-gray-900 disabled:opacity-50 touch-manipulation"
-            >
-              <span className="text-lg sm:text-xl">◀</span>
-            </button>
-            <button
-              onClick={nextPhoto}
-              disabled={isLoading}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 sm:p-2 shadow-lg transition-all text-gray-700 hover:text-gray-900 disabled:opacity-50 touch-manipulation"
-            >
-              <span className="text-lg sm:text-xl">▶</span>
-            </button>
-
-            {/* Image Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl sm:rounded-2xl"></div>
           </div>
 
-          {/* Enhanced Caption - Mobile optimized */}
-          <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
-            <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-700 leading-relaxed px-2">
-              {photos[index].caption}
-            </p>
-          </div>
-
-          {/* Dot Indicators - Larger touch targets on mobile */}
-          <div className="flex justify-center gap-3 sm:gap-2 mb-4 sm:mb-6 flex-shrink-0">
-            {photos.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goToPhoto(i)}
-                className={`w-4 h-4 sm:w-3 sm:h-3 rounded-full transition-all duration-300 touch-manipulation ${
-                  i === index
-                    ? 'bg-gradient-to-r from-blue-400 to-pink-400 scale-125 shadow-lg'
-                    : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Enhanced Navigation Buttons - Mobile optimized */}
-          <div className="flex gap-2 sm:gap-4 flex-shrink-0">
-            <button
-              onClick={prevPhoto}
-              disabled={isLoading}
-              className="flex-1 bg-gradient-to-r from-blue-400 to-blue-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full hover:from-blue-500 hover:to-blue-600 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base touch-manipulation"
-            >
-              <span className="flex items-center justify-center gap-1 sm:gap-2">
-                <span className="text-base sm:text-lg">◀</span>
-                <span className="hidden sm:inline">Previous</span>
-              </span>
-            </button>
-            <button
-              onClick={nextPhoto}
-              disabled={isLoading}
-              className="flex-1 bg-gradient-to-r from-pink-400 to-pink-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full hover:from-pink-500 hover:to-pink-600 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base touch-manipulation"
-            >
-              <span className="flex items-center justify-center gap-1 sm:gap-2">
-                <span className="hidden sm:inline">Next</span>
-                <span className="text-base sm:text-lg">▶</span>
-              </span>
-            </button>
+          {/* Navigation hints */}
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-white text-sm text-center">
+            <p>Desliza izquierda/derecha para navegar • Toca afuera para cerrar</p>
           </div>
         </div>
+      )}
 
-        {/* Footer - Mobile friendly */}
-        <div className="mt-4 sm:mt-8 text-center text-white/60 text-xs sm:text-sm px-4 flex-shrink-0">
-          <p>💕 Made with love for our special moments 💕</p>
-        </div>
-      </div>
     </div>
-  );
+  )
 }
+
+export default PhotoCarousel
