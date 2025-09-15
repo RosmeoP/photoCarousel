@@ -5,6 +5,8 @@ const PhotoCarousel = ({ photos = [] }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [showHearts, setShowHearts] = useState(false)
   const [selectedPhoto, setSelectedPhoto] = useState(null)
+  const [shakePhoto, setShakePhoto] = useState(null)
+  const [photoTransition, setPhotoTransition] = useState('scale')
 
   // Icon Components
   const HeartIcon = ({ className = "w-5 h-5" }) => (
@@ -76,33 +78,73 @@ const PhotoCarousel = ({ photos = [] }) => {
     setTimeout(() => setShowHearts(false), 3000)
   }
 
-  // Handle Polaroid selection
+  // Handle Polaroid selection with shake effect
   const handlePolaroidClick = (index) => {
     if (selectedPhoto === index) {
       setSelectedPhoto(null)
     } else {
+      // Trigger shake effect when selecting photo
+      triggerShake(index)
       setSelectedPhoto(index)
       setCurrentIndex(index)
     }
   }
 
-  // Navigation functions
+  // Polaroid shake effect
+  const triggerShake = (index) => {
+    setShakePhoto(index)
+    setTimeout(() => setShakePhoto(null), 600)
+  }
+
+  // Get dramatic transition class
+  const getTransitionClass = (transition) => {
+    switch (transition) {
+      case 'scale':
+        return 'scale-75 opacity-50'
+      case 'slide':
+        return 'translate-x-full opacity-0'
+      case 'rotate':
+        return 'rotate-180 scale-50 opacity-30'
+      case 'flip':
+        return 'rotateY-180 scale-90 opacity-40'
+      default:
+        return 'scale-75 opacity-50'
+    }
+  }
+
+  // Navigation functions with dramatic transitions
   const goToNext = () => {
     if (isLoading) return
     setIsLoading(true)
+    
+    // Random dramatic transition
+    const transitions = ['scale', 'slide', 'rotate', 'flip']
+    setPhotoTransition(transitions[Math.floor(Math.random() * transitions.length)])
+    
     const nextIndex = (currentIndex + 1) % photos.length
     setCurrentIndex(nextIndex)
     setSelectedPhoto(nextIndex)
-    setTimeout(() => setIsLoading(false), 300)
+    
+    // Trigger shake effect for new photo
+    setTimeout(() => triggerShake(nextIndex), 100)
+    setTimeout(() => setIsLoading(false), 600)
   }
 
   const goToPrevious = () => {
     if (isLoading) return
     setIsLoading(true)
+    
+    // Random dramatic transition
+    const transitions = ['scale', 'slide', 'rotate', 'flip']
+    setPhotoTransition(transitions[Math.floor(Math.random() * transitions.length)])
+    
     const prevIndex = (currentIndex - 1 + photos.length) % photos.length
     setCurrentIndex(prevIndex)
     setSelectedPhoto(prevIndex)
-    setTimeout(() => setIsLoading(false), 300)
+    
+    // Trigger shake effect for new photo
+    setTimeout(() => triggerShake(prevIndex), 100)
+    setTimeout(() => setIsLoading(false), 600)
   }
 
   // Touch/swipe handling for selected photo
@@ -129,6 +171,18 @@ const PhotoCarousel = ({ photos = [] }) => {
     setTouchStart(0)
     setTouchEnd(0)
   }
+
+  // Initial shake effect when component mounts
+  useEffect(() => {
+    if (photos.length > 0) {
+      // Trigger shake effect for photos one by one
+      photos.forEach((_, index) => {
+        setTimeout(() => {
+          triggerShake(index)
+        }, index * 200) // Stagger the shake effects
+      })
+    }
+  }, [photos.length])
 
   // Keyboard navigation
   useEffect(() => {
@@ -234,6 +288,8 @@ const PhotoCarousel = ({ photos = [] }) => {
             style={getPolaroidStyle(index)}
             className={`cursor-pointer transition-all duration-500 ${
               selectedPhoto === index ? 'scale-110' : 'hover:scale-105'
+            } ${
+              shakePhoto === index ? 'animate-shake' : ''
             }`}
             onClick={() => handlePolaroidClick(index)}
           >
@@ -293,8 +349,12 @@ const PhotoCarousel = ({ photos = [] }) => {
             <CloseIcon />
           </button>
 
-          {/* Large Polaroid Display */}
-          <div className="bg-white p-6 pb-20 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300">
+          {/* Large Polaroid Display with dramatic transitions */}
+          <div className={`bg-white p-6 pb-20 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-700 ${
+            isLoading ? getTransitionClass(photoTransition) : ''
+          } ${
+            shakePhoto === selectedPhoto ? 'animate-shake' : ''
+          }`}>
             <div className="relative">
               <img
                 src={photos[selectedPhoto].src}

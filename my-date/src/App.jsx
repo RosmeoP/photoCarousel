@@ -43,7 +43,32 @@ const App = () => {
   )
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-pink-50 via-white to-red-50 relative overflow-hidden">
+    <>
+      {/* Custom CSS for animations */}
+      <style jsx global>{`
+        @keyframes shake {
+          0%, 100% { transform: rotate(0deg); }
+          10% { transform: rotate(-3deg) scale(1.02); }
+          20% { transform: rotate(3deg) scale(1.01); }
+          30% { transform: rotate(-2deg) scale(1.03); }
+          40% { transform: rotate(2deg) scale(1.01); }
+          50% { transform: rotate(-1deg) scale(1.02); }
+          60% { transform: rotate(1deg) scale(1.01); }
+          70% { transform: rotate(-0.5deg) scale(1.01); }
+          80% { transform: rotate(0.5deg) scale(1.005); }
+          90% { transform: rotate(-0.2deg); }
+        }
+        
+        .animate-shake {
+          animation: shake 0.6s ease-in-out;
+        }
+        
+        .rotateY-180 {
+          transform: rotateY(180deg);
+        }
+      `}</style>
+      
+      <div className="w-full min-h-screen bg-gradient-to-br from-pink-50 via-white to-red-50 relative overflow-hidden">
       {/* Vintage Paper Texture Background */}
       <div className="absolute inset-0 opacity-5">
         <div className="w-full h-full" style={{
@@ -129,7 +154,8 @@ const App = () => {
 
       {/* Vintage Paper Edge Effect at Bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-amber-100/30 to-transparent pointer-events-none"></div>
-    </div>
+      </div>
+    </>
   )
 }
 
