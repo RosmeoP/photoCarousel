@@ -5,18 +5,33 @@ const App = () => {
   const photos = [
     {
       src: "/img/bicepPic.JPG",
-      title: "Momento Hermoso",
+      title: "My bicep biter",
       description: "Se ve hermosa a mi lado"
     },
     {
       src: "/img/hands.JPG", 
-      title: "Conexión Dulce",
+      title: "Nuestras manos entrelazadas",
       description: "Tomados de la mano con Dianne"
     },
     {
       src: "/img/hug.jpg",
       title: "Abrazo Cálido", 
       description: "Un abrazo cálido para recordar"
+    },
+    {
+      src: "/img/view.jpg",
+      title: "Nuestra primera cita, y llueve",
+      description: "Creo que lloviera lo hizo más bonito"
+    },
+    {
+      src: "/img/kiss.jpg",
+      title: "crazy for those kisses",
+      description: "This one is english bc im too shy to say in spanish that im crazy for those kisses and the way you look at me"
+    },
+    {
+      src: "/img/ugh.jpg",
+      title: "La foto que menos me gusta",
+      description: "Cuando me pasaste rogando dias por una foto tirando un beso para que tomes una foto cuando me queria reir y saliera tirando un beso (T-T)"
     }
   ]
 
@@ -70,7 +85,7 @@ const App = () => {
               <div className="flex items-center justify-center gap-3 mb-4">
                 <HeartIcon className="w-8 h-8 text-red-500" />
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800" style={{fontFamily: 'cursive'}}>
-                  Primera Cita con Dianne
+                  Primera Cita con Dianne 
                 </h1>
                 <HeartIcon className="w-8 h-8 text-red-500" />
               </div>
@@ -84,7 +99,7 @@ const App = () => {
               
               {/* Romantic Quote */}
               <p className="text-pink-600 italic text-sm font-medium mt-4">
-                "El comienzo de nuestra hermosa historia de amor"
+                "Esas horas horas se sintieron como minutos"
               </p>
             </div>
           </div>

@@ -27,25 +27,39 @@ const PhotoCarousel = ({ photos = [] }) => {
 
   // Romantic quotes for each photo
   const romanticQuotes = [
-    "Cada momento contigo se siente como un cuento de hadas",
-    "En tus brazos, he encontrado mi hogar para siempre", 
-    "Haces que mi corazón se acelere cada día",
-    "El amor se fortalece con cada sonrisa que compartimos",
-    "Juntos creamos nuestra propia historia de amor"
+    "Cada momento contigo fue tan especial, me gusto tanto pasar tiempo contigo (Aunque escucharas como me moria de hambre, esta es mi foto favorita de hecho) ",
+    "Creo que bese tu mano más de 20 veces en menos de una hora", 
+    "Haces que mi corazón se acelere (me tenias bien nervioso)",
+    "La laguna se veía bonita, pero no tanto como tú",
+    "Kissing you feels like a dream I never want to wake up from",
+    "Mi niña linda, me das furia y ternura a la vez",
   ]
 
-  // Generate random positions for Polaroids
+  // Generate positions for Polaroids - mobile optimized
   const getPolaroidStyle = (index) => {
-    const rotations = [-8, 5, -3, 7, -5, 2, -7, 4]
+    const rotations = [-8, 5, -3, 7, -5, 2, -7, 4, -6, 3, -4, 6]
+    // Mobile-friendly distribution - better spacing
     const positions = [
-      { top: '5%', left: '10%' },
-      { top: '25%', left: '60%' },
-      { top: '45%', left: '15%' },
-      { top: '65%', left: '70%' },
-      { top: '15%', left: '40%' },
-      { top: '75%', left: '25%' },
-      { top: '35%', left: '75%' },
-      { top: '85%', left: '45%' }
+      // Foto 0 - My bicep biter
+      { top: '8%', left: '12%' },   
+      // Foto 1 - Nuestras manos entrelazadas  
+      { top: '23%', left: '55%' },  
+      // Foto 2 - Abrazo Cálido
+      { top: '38%', left: '8%' },   
+      // Foto 3 - Nuestra primera cita
+      { top: '53%', left: '50%' },  
+      // Foto 4 - crazy for those kisses
+      { top: '68%', left: '15%' },  
+      // Foto 5 - La foto que menos me gusta
+      { top: '83%', left: '45%' },  
+      
+      // Extra positions for more photos
+      { top: '15%', left: '75%' },
+      { top: '30%', left: '25%' },
+      { top: '45%', left: '70%' },
+      { top: '60%', left: '20%' },
+      { top: '75%', left: '65%' },
+      { top: '90%', left: '30%' }
     ]
     
     return {
@@ -174,20 +188,41 @@ const PhotoCarousel = ({ photos = [] }) => {
       
 
       {/* Polaroid Gallery */}
-      <div className="relative w-full h-screen p-4">
+      <div className="relative w-full min-h-screen p-2 pb-20" style={{height: 'calc(100vh + 400px)'}}>
+        {/* Coffee Thread connecting photos */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex: 5}} viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Main thread - solid line connecting all photos */}
+          <path
+            d="M 10 15 Q 25 20 45 25 Q 65 30 80 20 Q 85 35 70 45 Q 50 55 30 50 Q 15 65 40 70 Q 60 75 75 85 Q 80 90 85 95"
+            stroke="#8B4513"
+            strokeWidth="0.3"
+            fill="none"
+            opacity="0.8"
+          />
+          
+          {/* Secondary connecting thread */}
+          <path
+            d="M 15 10 Q 35 25 55 15 Q 75 40 45 55 Q 25 70 50 80 Q 70 85 90 90"
+            stroke="#A0522D"
+            strokeWidth="0.2"
+            fill="none"
+            opacity="0.6"
+          />
+        </svg>
+
         {/* Background scattered hearts */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(15)].map((_, i) => (
             <div
               key={i}
-              className="absolute text-pink-200 opacity-30"
+              className="absolute text-pink-200 opacity-20"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 transform: `rotate(${Math.random() * 360}deg)`
               }}
             >
-              <HeartIcon className="w-8 h-8" />
+              <HeartIcon className="w-6 h-6" />
             </div>
           ))}
         </div>
@@ -208,12 +243,17 @@ const PhotoCarousel = ({ photos = [] }) => {
                 <img
                   src={photo.src}
                   alt={photo.title || `Memory ${index + 1}`}
-                  className="w-48 h-40 sm:w-56 sm:h-44 object-cover rounded"
+                  className="w-36 h-28 sm:w-40 sm:h-32 object-cover rounded"
                   draggable={false}
                 />
                 
+                {/* Coffee thread clip */}
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-amber-800 opacity-80 rounded-full border-2 border-amber-900 flex items-center justify-center">
+                  <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
+                </div>
+                
                 {/* Tape effect */}
-                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-4 bg-yellow-100 opacity-70 rounded-sm border border-yellow-200"></div>
+                <div className="absolute -top-2 right-2 w-6 h-4 bg-yellow-100 opacity-70 rounded-sm border border-yellow-200 transform rotate-12"></div>
               </div>
               
               {/* Handwritten style caption */}
@@ -234,11 +274,7 @@ const PhotoCarousel = ({ photos = [] }) => {
         ))}
 
         {/* Instruction text */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
-          <p className="text-pink-600 text-sm bg-white/80 px-4 py-2 rounded-full shadow">
-            Toca cualquier foto para enfocar • Desliza para navegar
-          </p>
-        </div>
+       
       </div>
 
       {/* Selected Photo Overlay */}
